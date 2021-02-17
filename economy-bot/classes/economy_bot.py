@@ -57,7 +57,9 @@ class EconomyBot(discord.ext.commands.Bot):
             embed.add_field(name=f"{economy_bot.command_prefix}config <{lang['prefix']}> <{lang['value']}>",
                             value=lang["info_description"]["config_update"],
                             inline=False)
-            embed.add_field(name="Legend", value="< > = mandatory parameter", inline=False)
+            embed.add_field(name=lang["info_description"]["legend"],
+                            value=lang["info_description"]["legend_description"],
+                            inline=False)
             await ctx.channel.send(embed=embed)
 
         economy_bot.run(token)
