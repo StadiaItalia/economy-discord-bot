@@ -15,16 +15,16 @@ class BotDatabase(MongoDatabase):
         self.logger.debug(f"Connected to {self.database}")
 
     def read_configuration(self, guild_id):
-        configuration = self.configuration_repository.find_one({"guildId": guild_id})
+        configuration = self.configuration_repository.find_one({"guild_id": guild_id})
         if configuration:
             self.logger.debug(f"Configuration found: {str(configuration)}")
-            return configuration
+            return BotConfiguration.from_dict(configuration)
         else:
             self.logger.debug(f"Couldn't find any configuration for guild {guild_id}")
             return None
 
     def remove_configuration(self, guild_id):
-        deleted = self.configuration_repository.delete_many({"guildId": guild_id}).deleted_count
+        deleted = self.configuration_repository.delete_many({"guild_id": guild_id}).deleted_count
         if deleted.deleted_count > 0:
             self.logger.info(f"Deleted {deleted} configurations for guild {guild_id}")
             return True
@@ -33,7 +33,7 @@ class BotDatabase(MongoDatabase):
             return False
 
     def update_configuration(self, guild_id, item, value):
-        updated = self.configuration_repository.update_many({"guildId": guild_id}, {"$set": {item: value}})
+        updated = self.configuration_repository.update_many({"guild_id": guild_id}, {"$set": {item: value}})
         if updated.modified_count > 0:
             self.logger.info(f"Updated configuration for guild {guild_id}")
             self.logger.debug(f"==> updated item {item} with value {value}")
@@ -43,14 +43,14 @@ class BotDatabase(MongoDatabase):
             self.logger.debug(f"==> tried updating item {item} with value {value}")
             return False
 
-    def create_configuration(self, guild_id):
-        previous_configuration = self.read_configuration(guild_id=guild_id)
+    def create_configuration(self, guild):
+        previous_configuration = self.read_configuration(guild_id=guild.id)
         if previous_configuration:
-            self.logger.info(f"Configuration for guild {guild_id} already existing")
+            self.logger.info(f"Configuration for guild {guild.id} already existing")
             self.logger.debug(f"==> {str(previous_configuration)}")
-            return BotConfiguration.from_dict(previous_configuration)
+            return previous_configuration
         else:
-            bot_configuration = BotConfiguration(guildId=guild_id)
-            self.logger.info(f"Creating configuration for guild {guild_id}")
+            bot_configuration = BotConfiguration(guild_id=guild.id, guild_name=guild.name)
+            self.logger.info(f"Creating configuration for guild {guild.id}")
             self.configuration_repository.insert_one(bot_configuration.to_dict())
             return bot_configuration

@@ -23,9 +23,7 @@ if configuration.database_host and configuration.database_user and configuration
 else:
     raise Exception("Database environment variables not properly configured, please check documentation")
 
-economy_bot = EconomyBot(database=database, logger=logger)
-
 if configuration.discord_token:
-    economy_bot.run(configuration.discord_token)
+    EconomyBot.start_bot(token=configuration.discord_token, database=database, logger=logger)
 else:
     raise Exception("Environment variable ECONOMY_DISCORD_TOKEN not found")
