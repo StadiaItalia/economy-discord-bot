@@ -26,6 +26,20 @@ languages = {
             "check_maximum_currency": "ADVANCED, see repository through info command",
             "check_timer": "ADVANCED, see repository through info command",
             "payment_confirmation": "Wheter to show a confirmation message for assigning and exchanging currencies"
+        },
+        "done": "Done",
+        "done_description": "Command executed",
+        "error": "Error",
+        "error_messages": {
+            "configuration_parameter": "Configuration parameter not recognized",
+            "configuration_arguments": "Number of arguments passed incorrect",
+            "language_not_present": "Your chosen language is not yet loaded, please use another",
+            "cannot_update": "Cannot update the configuration right now, try later",
+            "role_not_present": "The selected role is not defined in the server",
+            "channel_not_present": "The selected channel is not present in the server",
+            "value_not_numeric": "The passed value is not numeric",
+            "value_greater_zero": "The passed value must be greater than 0",
+            "incorrect_value": "Passed value comprehension impossibile, please check"
         }
     },
 
@@ -56,6 +70,20 @@ languages = {
             "check_maximum_currency": "AVANZATO, controllare il repository presente nel comando info",
             "check_timer": "AVANZATO, controllare il repository presente nel comando info",
             "payment_confirmation": "Mostrare o meno una conferma per l'assegnazione e lo scambio di valuta"
+        },
+        "done": "Eseguito",
+        "done_description": "Comando eseguito",
+        "error": "Errore",
+        "error_messages": {
+            "configuration_parameter": "Parametro di configurazione non riconosciuto",
+            "configuration_arguments": "Numero di argomenti passati insufficiente",
+            "language_not_present": "Hai scelto un linguaggio non ancora presente, prova con un altro",
+            "cannot_update": "Non e stato possibile aggiornare la configurazione, riprovare piu tardi",
+            "role_not_present": "Il ruolo selezionato non e presente all'interno del server",
+            "channel_not_present": "Il canale selezionato e presente all'interno del server",
+            "value_not_numeric": "Il valore passato non e numerico",
+            "value_greater_zero": "Il valore passato deve essere maggiore di 0",
+            "incorrect_value": "Impossibile comprendere il valore passato, verificare"
         }
     }
 }
@@ -64,3 +92,7 @@ languages = {
 def select(key):
     language = languages[key]
     return language
+
+
+def get_languages():
+    return languages.keys()

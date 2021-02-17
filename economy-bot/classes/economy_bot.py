@@ -50,11 +50,125 @@ class EconomyBot(discord.ext.commands.Bot):
         @economy_bot.command()
         async def config(ctx, *args):
             configuration = database.read_configuration(guild_id=ctx.guild.id)
+            language_dictionary = language.select(configuration.language)
+            embed = None
             if not args:
                 embed = cf.get_configuration_embed(command_prefix=economy_bot.command_prefix,
                                                    configuration=configuration,
-                                                   language=language.select(configuration.language))
+                                                   language=language_dictionary)
+
+            elif len(args) >= 2:
+                prefix = args[0]
+                if prefix == "language":
+                    value = args[1]
+                    if value not in language.get_languages():
+                        embed = cf.get_error_embed(language=language_dictionary, key="language_not_present")
+                    else:
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                                             language_dictionary=language_dictionary)
+                elif prefix == "role":
+                    value = args[1]
+                    if value == "disable":
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=None,
+                                             language_dictionary=language_dictionary)
+                    elif not discord.utils.get(ctx.guild.roles, id=int(cf.clean_role_id(role_id=value))):
+                        embed = cf.get_error_embed(language=language_dictionary, key="role_not_present")
+                    else:
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                                             language_dictionary=language_dictionary)
+
+                elif prefix == "command_channel":
+                    value = args[1]
+                    if value == "disable":
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=None,
+                                             language_dictionary=language_dictionary)
+                    elif not discord.utils.get(ctx.guild.channels, id=int(cf.clean_channel_id(channel_id=value))):
+                        embed = cf.get_error_embed(language=language_dictionary, key="channel_not_present")
+                    else:
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                                             language_dictionary=language_dictionary)
+
+                elif prefix == "listening_channels":
+                    value = args[1:]
+                    if args[1] == "disable":
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=None,
+                                             language_dictionary=language_dictionary)
+                    # TODO add a check for every channel listed
+                    # elif not discord.utils.get(ctx.guild.channels, id=int(cf.clean_channel_id(channel_id=value))):
+                    #     embed = cf.get_error_embed(language=language_dictionary, key="channel_not_present")
+                    # else:
+                    logger.debug(value)
+                    embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                                         language_dictionary=language_dictionary)
+
+                elif prefix == "currency_name":
+                    value = args[1]
+                    embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                                         language_dictionary=language_dictionary)
+
+                elif prefix == "currency_icon":
+                    value = args[1]
+                    embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                                         language_dictionary=language_dictionary)
+
+                elif prefix == "check_maximum_messages":
+                    value = args[1]
+                    if not value.isnumeric():
+                        embed = cf.get_error_embed(language=language_dictionary, key="value_not_numeric")
+                    elif not value > 0:
+                        embed = cf.get_error_embed(language=language_dictionary, key="value_greater_zero")
+                    else:
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                                             language_dictionary=language_dictionary)
+
+                elif prefix == "check_minimum_messages":
+                    value = args[1]
+                    if not value.isnumeric():
+                        embed = cf.get_error_embed(language=language_dictionary, key="value_not_numeric")
+                    elif not value > 0:
+                        embed = cf.get_error_embed(language=language_dictionary, key="value_greater_zero")
+                    else:
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                                             language_dictionary=language_dictionary)
+
+                elif prefix == "check_maximum_currency":
+                    value = args[1]
+                    if not value.isnumeric():
+                        embed = cf.get_error_embed(language=language_dictionary, key="value_not_numeric")
+                    elif not value > 0:
+                        embed = cf.get_error_embed(language=language_dictionary, key="value_greater_zero")
+                    else:
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                                             language_dictionary=language_dictionary)
+
+                elif prefix == "check_timer":
+                    value = args[1]
+                    if not value.isnumeric():
+                        embed = cf.get_error_embed(language=language_dictionary, key="value_not_numeric")
+                    elif not value > 0:
+                        embed = cf.get_error_embed(language=language_dictionary, key="value_greater_zero")
+                    else:
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                                             language_dictionary=language_dictionary)
+
+                elif prefix == "payment_confirmation":
+                    value = args[1]
+                    if value.lower() not in ["on", "off"]:
+                        embed = cf.get_error_embed(language=language_dictionary, key="incorrect_value")
+                    else:
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                                             language_dictionary=language_dictionary)
+            else:
+                embed = cf.get_error_embed(language=language_dictionary, key="configuration_arguments")
 
             await ctx.channel.send(embed=embed)
+
+        def update_value(guild_id, item, value, language_dictionary):
+            if database.update_configuration(guild_id=guild_id,
+                                             item=item,
+                                             value=value):
+                return cf.get_done_embed(language=language_dictionary)
+            else:
+                return cf.get_error_embed(language=language_dictionary, key="cannot_update")
 
         economy_bot.run(token)
