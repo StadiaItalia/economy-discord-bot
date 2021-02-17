@@ -1,13 +1,15 @@
 from boilerplate.mongodatabase import MongoDatabase
 from classes.bot_configuration import BotConfiguration
+from classes.wallet import Wallet
 from pymongo import MongoClient
 
 
 class BotDatabase(MongoDatabase):
-    def __init__(self, host, user, password, database, configuration_repository, logger):
+    def __init__(self, host, user, password, database, configuration_repository, wallet_repository, logger):
         self.logger = logger
         self.init_database(host=host, user=user, password=password, db_name=database)
         self.configuration_repository = self.get_collection(configuration_repository)
+        self.wallet_repository = self.get_collection(wallet_repository)
 
     def init_database(self, host, user, password, db_name):
         self.database = MongoClient(
@@ -54,3 +56,24 @@ class BotDatabase(MongoDatabase):
             self.logger.info(f"Creating configuration for guild {guild.id}")
             self.configuration_repository.insert_one(bot_configuration.to_dict())
             return bot_configuration
+
+    def read_wallet(self, user_id, guild_id):
+        wallet = self.wallet_repository.find_one({"guild_id": guild_id, "user_id": user_id})
+        if wallet:
+            self.logger.debug(f"Wallet found: {str(wallet)}")
+            return Wallet.from_dict(wallet)
+        else:
+            self.logger.debug(f"Couldn't find any wallet for user {user_id} in guild {guild_id}")
+            return None
+
+    def create_wallet(self, user_id, guild_id):
+        wallet = self.read_wallet(user_id=user_id, guild_id=guild_id)
+        if wallet:
+            self.logger.info(f"Registration for user {user_id} in guild {guild_id} already existing")
+            self.logger.debug(f"==> {str(wallet)}")
+            return False
+        else:
+            wallet = Wallet(guild_id=guild_id, user_id=user_id)
+            self.logger.info(f"Creating registration for user {user_id} in guild {guild_id}")
+            self.wallet_repository.insert_one(wallet.to_dict())
+            return True

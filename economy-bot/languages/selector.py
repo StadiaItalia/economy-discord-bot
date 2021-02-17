@@ -27,6 +27,10 @@ languages = {
             "check_timer": "ADVANCED, see repository through info command",
             "payment_confirmation": "Wheter to show a confirmation message for assigning and exchanging currencies"
         },
+        "registration": {
+            "title": "Wallet registration",
+            "description": "Do you wanna create your personal wallet and start gaining the server currency?"
+        },
         "done": "Done",
         "done_description": "Command executed",
         "error": "Error",
@@ -39,7 +43,9 @@ languages = {
             "channel_not_present": "The selected channel is not present in the server",
             "value_not_numeric": "The passed value is not numeric",
             "value_greater_zero": "The passed value must be greater than 0",
-            "incorrect_value": "Passed value comprehension impossibile, please check"
+            "incorrect_value": "Passed value comprehension impossibile, please check",
+            "timeout": "Timeout",
+            "wallet_already_registered": "Wallet already registered"
         }
     },
 
@@ -71,6 +77,10 @@ languages = {
             "check_timer": "AVANZATO, controllare il repository presente nel comando info",
             "payment_confirmation": "Mostrare o meno una conferma per l'assegnazione e lo scambio di valuta"
         },
+        "registration": {
+            "title": "Registrazione wallet",
+            "description": "Vuoi creare il tuo wallet e cominciare ad accumulare la valuta del server?"
+        },
         "done": "Eseguito",
         "done_description": "Comando eseguito",
         "error": "Errore",
@@ -83,7 +93,9 @@ languages = {
             "channel_not_present": "Il canale selezionato e presente all'interno del server",
             "value_not_numeric": "Il valore passato non e numerico",
             "value_greater_zero": "Il valore passato deve essere maggiore di 0",
-            "incorrect_value": "Impossibile comprendere il valore passato, verificare"
+            "incorrect_value": "Impossibile comprendere il valore passato, verificare",
+            "timeout": "Timeout",
+            "wallet_already_registered": "Wallet gia esistente"
         }
     }
 }

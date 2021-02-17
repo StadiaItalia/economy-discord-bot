@@ -110,3 +110,16 @@ def clean_role_id(role_id):
 
 def clean_user_id(user_id):
     return user_id.replace("<@!", "").replace(">", "")
+
+
+async def send_confirmation(context, title, description):
+    embed = get_embed(title=title, description=description, color=discord.Color.dark_magenta())
+    confirmation_message = await context.channel.send(embed=embed)
+    await confirmation_message.add_reaction(emoji="✅")
+    await confirmation_message.add_reaction(emoji="❎")
+    return confirmation_message
+
+
+async def clear_confirmation(confirmation_message):
+    await confirmation_message.clear_reaction(emoji="✅")
+    await confirmation_message.clear_reaction(emoji="❎")

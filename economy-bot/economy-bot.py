@@ -17,6 +17,7 @@ if configuration.database_host and configuration.database_user and configuration
         database = BotDatabase(host=configuration.database_host, user=configuration.database_user,
                                database=configuration.database_name, password=configuration.database_password,
                                configuration_repository=configuration.database_configuration_collection,
+                               wallet_repository=configuration.database_wallet_collection,
                                logger=logger)
     except Exception as ex:
         raise Exception(f"Exception during database startup: {ex}")

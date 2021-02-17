@@ -1,3 +1,4 @@
+import asyncio
 import traceback
 import modules.common_functions as cf
 import discord as discord
@@ -115,45 +116,45 @@ class EconomyBot(discord.ext.commands.Bot):
                     value = args[1]
                     if not value.isnumeric():
                         embed = cf.get_error_embed(language=language_dictionary, key="value_not_numeric")
-                    elif not value > 0:
+                    elif not int(value) > 0:
                         embed = cf.get_error_embed(language=language_dictionary, key="value_greater_zero")
                     else:
-                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=int(value),
                                              language_dictionary=language_dictionary)
 
                 elif prefix == "check_minimum_messages":
                     value = args[1]
                     if not value.isnumeric():
                         embed = cf.get_error_embed(language=language_dictionary, key="value_not_numeric")
-                    elif not value > 0:
+                    elif not int(value) > 0:
                         embed = cf.get_error_embed(language=language_dictionary, key="value_greater_zero")
                     else:
-                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=int(value),
                                              language_dictionary=language_dictionary)
 
                 elif prefix == "check_maximum_currency":
                     value = args[1]
                     if not value.isnumeric():
                         embed = cf.get_error_embed(language=language_dictionary, key="value_not_numeric")
-                    elif not value > 0:
+                    elif not int(value) > 0:
                         embed = cf.get_error_embed(language=language_dictionary, key="value_greater_zero")
                     else:
-                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=int(value),
                                              language_dictionary=language_dictionary)
 
                 elif prefix == "check_timer":
                     value = args[1]
                     if not value.isnumeric():
                         embed = cf.get_error_embed(language=language_dictionary, key="value_not_numeric")
-                    elif not value > 0:
+                    elif not int(value) > 0:
                         embed = cf.get_error_embed(language=language_dictionary, key="value_greater_zero")
                     else:
-                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=int(value),
                                              language_dictionary=language_dictionary)
 
                 elif prefix == "payment_confirmation":
                     value = args[1]
-                    if value.lower() not in ["on", "off"]:
+                    if value.lower() not in ["true", "false"]:
                         embed = cf.get_error_embed(language=language_dictionary, key="incorrect_value")
                     else:
                         embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
@@ -162,6 +163,32 @@ class EconomyBot(discord.ext.commands.Bot):
                 embed = cf.get_error_embed(language=language_dictionary, key="configuration_arguments")
 
             await ctx.channel.send(embed=embed)
+
+        @economy_bot.command()
+        async def register(ctx):
+            configuration = database.read_configuration(guild_id=ctx.guild.id)
+            language_dictionary = language.select(configuration.language)
+            confirmation_message = await cf.send_confirmation(context=ctx,
+                                                              title=language_dictionary["registration"]["title"],
+                                                              description=language_dictionary["registration"][
+                                                                  "description"])
+
+            def check_confirmation(reaction, user):
+                return user == ctx.author and str(reaction.emoji) == "✅"
+
+            try:
+                reaction, user = await economy_bot.wait_for("reaction_add", timeout=15.0, check=check_confirmation)
+            except asyncio.TimeoutError:
+                embed = cf.get_error_embed(language=language_dictionary, key="timeout")
+                await confirmation_message.edit(embed=embed)
+                await confirmation_message.clear_reactions()
+            else:
+                if database.create_wallet(user_id=ctx.author.id, guild_id=ctx.guild.id):
+                    embed = cf.get_done_embed(language=language_dictionary)
+                else:
+                    embed = cf.get_error_embed(language=language_dictionary, key="wallet_already_registered")
+                await confirmation_message.edit(embed=embed)
+                await confirmation_message.clear_reactions()
 
         def update_value(guild_id, item, value, language_dictionary):
             if database.update_configuration(guild_id=guild_id,
