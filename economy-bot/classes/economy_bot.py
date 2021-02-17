@@ -41,25 +41,20 @@ class EconomyBot(discord.ext.commands.Bot):
             database.remove_configuration(guild_id=guild.id)
 
         @economy_bot.command()
-        async def info(ctx, **args):
-            logger.debug(args)
+        async def info(ctx):
             configuration = database.read_configuration(guild_id=ctx.guild.id)
-            lang = language.select(configuration.language)
-            embed = cf.get_embed(title=lang["info_description"]["title"],
-                                 description=lang["info_description"]["description"],
-                                 color=discord.Colour.dark_green())
-            embed.add_field(name=f"{economy_bot.command_prefix}info",
-                            value=lang["info_description"]["info"],
-                            inline=False)
-            embed.add_field(name=f"{economy_bot.command_prefix}config",
-                            value=lang["info_description"]["config"],
-                            inline=False)
-            embed.add_field(name=f"{economy_bot.command_prefix}config <{lang['prefix']}> <{lang['value']}>",
-                            value=lang["info_description"]["config_update"],
-                            inline=False)
-            embed.add_field(name=lang["info_description"]["legend"],
-                            value=lang["info_description"]["legend_description"],
-                            inline=False)
+            embed = cf.get_info_embed(command_prefix=economy_bot.command_prefix,
+                                      language=language.select(configuration.language))
+            await ctx.channel.send(embed=embed)
+
+        @economy_bot.command()
+        async def config(ctx, *args):
+            configuration = database.read_configuration(guild_id=ctx.guild.id)
+            if not args:
+                embed = cf.get_configuration_embed(command_prefix=economy_bot.command_prefix,
+                                                   configuration=configuration,
+                                                   language=language.select(configuration.language))
+
             await ctx.channel.send(embed=embed)
 
         economy_bot.run(token)
