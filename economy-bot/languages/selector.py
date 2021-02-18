@@ -31,6 +31,10 @@ languages = {
             "title": "Wallet registration",
             "description": "Do you wanna create your personal wallet and start gaining the server currency?"
         },
+        "wallet": {
+            "title": "Personal wallet",
+            "description": "You have {} {} {} in your wallet"
+        },
         "done": "Done",
         "done_description": "Command executed",
         "error": "Error",
@@ -45,7 +49,8 @@ languages = {
             "value_greater_zero": "The passed value must be greater than 0",
             "incorrect_value": "Passed value comprehension impossibile, please check",
             "timeout": "Timeout",
-            "wallet_already_registered": "Wallet already registered"
+            "wallet_already_registered": "Wallet already registered",
+            "wallet_retrieval": "Cannot retrieve wallet right now, try later"
         }
     },
 
@@ -81,6 +86,10 @@ languages = {
             "title": "Registrazione wallet",
             "description": "Vuoi creare il tuo wallet e cominciare ad accumulare la valuta del server?"
         },
+        "wallet": {
+            "title": "Wallet personale",
+            "description": "Hai {} {} {} nel tuo wallet"
+        },
         "done": "Eseguito",
         "done_description": "Comando eseguito",
         "error": "Errore",
@@ -95,7 +104,8 @@ languages = {
             "value_greater_zero": "Il valore passato deve essere maggiore di 0",
             "incorrect_value": "Impossibile comprendere il valore passato, verificare",
             "timeout": "Timeout",
-            "wallet_already_registered": "Wallet gia esistente"
+            "wallet_already_registered": "Wallet gia esistente",
+            "wallet_retrieval": "Impossibile recuperare il wallet al momento, riprovare piu tardi"
         }
     }
 }

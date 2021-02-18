@@ -26,7 +26,7 @@ class EconomyBot(discord.ext.commands.Bot):
         @economy_bot.event
         async def on_ready():
             await economy_bot.change_presence(status=discord.Status.idle,
-                                              activity=discord.Game("Ready to roll!"))
+                                              activity=discord.Game("Ready to roll! Use e>info to start!"))
             logger.info(f"{economy_bot.user} connected on Discord!")
 
         @economy_bot.event
@@ -44,6 +44,9 @@ class EconomyBot(discord.ext.commands.Bot):
         @economy_bot.command()
         async def info(ctx):
             configuration = database.read_configuration(guild_id=ctx.guild.id)
+            if configuration.command_channel:
+                if ctx.channel.id != int(cf.clean_channel_id(channel_id=configuration.command_channel)):
+                    return
             embed = cf.get_info_embed(command_prefix=economy_bot.command_prefix,
                                       language=language.select(configuration.language))
             await ctx.channel.send(embed=embed)
@@ -51,6 +54,14 @@ class EconomyBot(discord.ext.commands.Bot):
         @economy_bot.command()
         async def config(ctx, *args):
             configuration = database.read_configuration(guild_id=ctx.guild.id)
+            if configuration.command_channel:
+                if ctx.channel.id != int(cf.clean_channel_id(channel_id=configuration.command_channel)):
+                    return
+            if configuration.role:
+                role = discord.utils.get(ctx.guild.roles, id=int(cf.clean_role_id(role_id=configuration.role)))
+                if role not in ctx.author.roles:
+                    return
+
             language_dictionary = language.select(configuration.language)
             embed = None
             if not args:
@@ -167,6 +178,9 @@ class EconomyBot(discord.ext.commands.Bot):
         @economy_bot.command()
         async def register(ctx):
             configuration = database.read_configuration(guild_id=ctx.guild.id)
+            if configuration.command_channel:
+                if ctx.channel.id != int(cf.clean_channel_id(channel_id=configuration.command_channel)):
+                    return
             language_dictionary = language.select(configuration.language)
             confirmation_message = await cf.send_confirmation(context=ctx,
                                                               title=language_dictionary["registration"]["title"],
@@ -189,6 +203,25 @@ class EconomyBot(discord.ext.commands.Bot):
                     embed = cf.get_error_embed(language=language_dictionary, key="wallet_already_registered")
                 await confirmation_message.edit(embed=embed)
                 await confirmation_message.clear_reactions()
+
+        @economy_bot.command()
+        async def wallet(ctx):
+            configuration = database.read_configuration(guild_id=ctx.guild.id)
+            if configuration.command_channel:
+                if ctx.channel.id != int(cf.clean_channel_id(channel_id=configuration.command_channel)):
+                    return
+            language_dictionary = language.select(configuration.language)
+            wallet = database.read_wallet(guild_id=ctx.guild.id, user_id=ctx.author.id)
+            embed = None
+            if wallet:
+                embed = cf.get_embed(title=language_dictionary["wallet"]["title"],
+                                     description=language_dictionary["wallet"]["description"].format(wallet.amount,
+                                                                                                     configuration.currency_icon,
+                                                                                                     configuration.currency_name),
+                                     color=discord.Color.blurple())
+            else:
+                embed = cf.get_error_embed(language=language_dictionary, key="wallet_retrieval")
+            await ctx.channel.send(embed=embed)
 
         def update_value(guild_id, item, value, language_dictionary):
             if database.update_configuration(guild_id=guild_id,
