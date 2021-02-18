@@ -87,6 +87,6 @@ class BotDatabase(MongoDatabase):
         if wallet:
             self.logger.info(f"Adding automatic reward of {amount} for user {user_id} in guild {guild_id}")
             total_amount = int(wallet.amount) + amount
-            self.logged.debug(f"Total amount: {total_amount}")
+            self.logger.debug(f"Total amount: {total_amount}")
             self.wallet_repository.update_one({"guild_id": guild_id, "user_id": user_id},
                                               {"$set": {"amount": total_amount}})
