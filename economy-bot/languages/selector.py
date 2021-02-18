@@ -50,7 +50,7 @@ languages = {
             "incorrect_value": "Passed value comprehension impossibile, please check",
             "timeout": "Timeout",
             "wallet_already_registered": "Wallet already registered",
-            "wallet_retrieval": "Cannot retrieve wallet right now, try later"
+            "wallet_retrieval": "Cannot retrieve wallet, make sure to register beforehand"
         }
     },
 
@@ -105,7 +105,7 @@ languages = {
             "incorrect_value": "Impossibile comprendere il valore passato, verificare",
             "timeout": "Timeout",
             "wallet_already_registered": "Wallet gia esistente",
-            "wallet_retrieval": "Impossibile recuperare il wallet al momento, riprovare piu tardi"
+            "wallet_retrieval": "Impossibile recuperare il wallet, accertarsi di essersi registrati prima"
         }
     }
 }

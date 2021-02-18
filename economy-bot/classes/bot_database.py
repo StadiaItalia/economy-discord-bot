@@ -57,6 +57,10 @@ class BotDatabase(MongoDatabase):
             self.configuration_repository.insert_one(bot_configuration.to_dict())
             return bot_configuration
 
+    def read_registered_users(self, guild_id):
+        registered_users = map(lambda x: Wallet.from_dict(x), self.wallet_repository.find({"guild_id": guild_id}))
+        return registered_users
+
     def read_wallet(self, user_id, guild_id):
         wallet = self.wallet_repository.find_one({"guild_id": guild_id, "user_id": user_id})
         if wallet:
@@ -77,3 +81,10 @@ class BotDatabase(MongoDatabase):
             self.logger.info(f"Creating registration for user {user_id} in guild {guild_id}")
             self.wallet_repository.insert_one(wallet.to_dict())
             return True
+
+    async def automatic_reward(self, user_id, guild_id, amount):
+        wallet = self.read_wallet(user_id=user_id, guild_id=guild_id)
+        if wallet:
+            self.logger.info(f"Adding automatic reward of {amount} for user {user_id} in guild {guild_id}")
+            self.wallet_repository.update_one({"guild_id": guild_id, "user_id": user_id},
+                                              {"$set": {"amount": int(wallet.amount) + amount}})
