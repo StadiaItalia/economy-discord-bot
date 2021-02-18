@@ -259,7 +259,6 @@ class EconomyBot(discord.ext.commands.Bot):
                                         f"Found messages older than {start_check}, stopping iteration for channel {channel.id}")
                                     break
                                 else:
-                                    logger.info(str(message))
                                     messages += 1
 
                         if messages >= int(configuration.check_maximum_messages):
@@ -267,11 +266,11 @@ class EconomyBot(discord.ext.commands.Bot):
                             break
 
                     logger.info(
-                        f"User {registered_user.user_id} wrote {messages} in the last {configuration.check_timer} minutes")
+                        f"User {registered_user.user_id} wrote {messages} message in the last {configuration.check_timer} minutes")
                     if messages > int(configuration.check_minimum_messages):
                         rate = messages / int(configuration.check_maximum_messages)
                         reward = rate * int(configuration.check_maximum_currency)
                         await database.automatic_reward(user_id=registered_user.user_id, guild_id=guild.id,
                                                         amount=reward)
-                        
+
         economy_bot.run(token)
