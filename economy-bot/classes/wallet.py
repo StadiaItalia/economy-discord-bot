@@ -2,7 +2,7 @@ class Wallet:
     def __init__(self, **args):
         self.guild_id = args.get("guild_id")
         self.user_id = args.get("user_id")
-        self.amount = args.get("amount", 0)
+        self.amount = float(args.get("amount", 0))
 
     def to_dict(self):
         return {

@@ -215,12 +215,12 @@ class EconomyBot(discord.ext.commands.Bot):
                     return
             language_dictionary = language.select(configuration.language)
             wallet = database.read_wallet(guild_id=ctx.guild.id, user_id=ctx.author.id)
-            embed = None
             if wallet:
                 embed = cf.get_embed(title=language_dictionary["wallet"]["title"],
-                                     description=language_dictionary["wallet"]["description"].format(wallet.amount,
-                                                                                                     configuration.currency_icon,
-                                                                                                     configuration.currency_name),
+                                     description=language_dictionary["wallet"]["description"].format(
+                                         round(wallet.amount, 2),
+                                         configuration.currency_icon,
+                                         configuration.currency_name),
                                      color=discord.Color.blurple())
             else:
                 embed = cf.get_error_embed(language=language_dictionary, key="wallet_retrieval")
