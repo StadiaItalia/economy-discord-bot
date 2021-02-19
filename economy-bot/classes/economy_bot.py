@@ -252,7 +252,7 @@ class EconomyBot(discord.ext.commands.Bot):
                         logger.debug(
                             f"Searching user {registered_user.user_id} messages in channel {channel.id} for server {guild.id}")
 
-                        async for message in channel.history(limit=10, oldest_first=False):
+                        async for message in channel.history(limit=500, oldest_first=False):
                             if message.author.id == int(registered_user.user_id):
                                 if message.created_at < start_check:
                                     logger.debug(
