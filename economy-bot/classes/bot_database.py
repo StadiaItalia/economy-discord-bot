@@ -82,11 +82,14 @@ class BotDatabase(MongoDatabase):
             self.wallet_repository.insert_one(wallet.to_dict())
             return True
 
-    async def automatic_reward(self, user_id, guild_id, amount):
+    # Operation is a string type. It can be "Adding" or "Subtracting". 
+    # You can perform better the operation like increase the money or exchange it
+    async def automatic_operation(self, user_id, guild_id, amount, operation):
         wallet = self.read_wallet(user_id=user_id, guild_id=guild_id)
         if wallet:
-            self.logger.info(f"Adding automatic reward of {amount} for user {user_id} in guild {guild_id}")
-            total_amount = float(wallet.amount) + amount
+            self.logger.info(f"{operation}  {amount} for user {user_id} in guild {guild_id}")
+            mathFunction = {"Adding":sum([wallet.amount,amount]), "Subtract":sum([wallet.amount,-amount])}
+            total_amount = mathFunction[operation]
             self.logger.debug(f"Total amount: {total_amount}")
             self.wallet_repository.update_one({"guild_id": guild_id, "user_id": user_id},
                                               {"$set": {"amount": total_amount}})
