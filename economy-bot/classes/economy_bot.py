@@ -273,4 +273,23 @@ class EconomyBot(discord.ext.commands.Bot):
                         await database.automatic_reward(user_id=registered_user.user_id, guild_id=guild.id,
                                                         amount=reward)
 
-        economy_bot.run(token)
+                    
+    #Donate Command               
+    @client.command()
+    async def donate(message,*args):
+            # example in chat -> !donate @TopoGigio 5
+            guild_id = message.guild.id
+            # The first arg is the user id while the second is the value to donate.
+            idReceiver = args[0][3:len(args[0])-1]
+            idSender = message.author.id
+            try:
+                moneyToSend = float(args[1])
+                # Check if the user has the money
+                moneySender = database.read_wallet(idSender,guild_id)
+                if moneySender >= moneyToSend:
+                    await database.automatic_operation(idSender, guild_id, moneyToSend, "Subtract")
+                    await database.automatic_operation(idReceiver,guild_id,moneyToSend,"Adding")
+            except:
+                print("Anisello, Ci sarà qualche errore")
+                
+    economy_bot.run(token)
