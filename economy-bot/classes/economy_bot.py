@@ -91,7 +91,6 @@ class EconomyBot(discord.ext.commands.Bot):
                     else:
                         embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
                                              language_dictionary=language_dictionary)
-
                 elif prefix == "command_channel":
                     value = args[1]
                     if value == "disable":
@@ -102,7 +101,6 @@ class EconomyBot(discord.ext.commands.Bot):
                     else:
                         embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
                                              language_dictionary=language_dictionary)
-
                 elif prefix == "listening_channels":
                     value = args[1:]
                     if args[1] == "disable":
@@ -115,17 +113,14 @@ class EconomyBot(discord.ext.commands.Bot):
                     logger.debug(value)
                     embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
                                          language_dictionary=language_dictionary)
-
                 elif prefix == "currency_name":
                     value = args[1]
                     embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
                                          language_dictionary=language_dictionary)
-
                 elif prefix == "currency_icon":
                     value = args[1]
                     embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
                                          language_dictionary=language_dictionary)
-
                 elif prefix == "check_maximum_messages":
                     value = args[1]
                     if not value.isnumeric():
@@ -135,7 +130,6 @@ class EconomyBot(discord.ext.commands.Bot):
                     else:
                         embed = update_value(guild_id=ctx.guild.id, item=prefix, value=int(value),
                                              language_dictionary=language_dictionary)
-
                 elif prefix == "check_minimum_messages":
                     value = args[1]
                     if not value.isnumeric():
@@ -145,7 +139,6 @@ class EconomyBot(discord.ext.commands.Bot):
                     else:
                         embed = update_value(guild_id=ctx.guild.id, item=prefix, value=int(value),
                                              language_dictionary=language_dictionary)
-
                 elif prefix == "check_maximum_currency":
                     value = args[1]
                     if not value.isnumeric():
@@ -155,7 +148,6 @@ class EconomyBot(discord.ext.commands.Bot):
                     else:
                         embed = update_value(guild_id=ctx.guild.id, item=prefix, value=int(value),
                                              language_dictionary=language_dictionary)
-
                 elif prefix == "check_timer":
                     value = args[1]
                     if not value.isnumeric():
@@ -165,7 +157,6 @@ class EconomyBot(discord.ext.commands.Bot):
                     else:
                         embed = update_value(guild_id=ctx.guild.id, item=prefix, value=int(value),
                                              language_dictionary=language_dictionary)
-
                 elif prefix == "payment_confirmation":
                     value = args[1]
                     if value.lower() not in ["true", "false"]:
@@ -173,6 +164,8 @@ class EconomyBot(discord.ext.commands.Bot):
                     else:
                         embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
                                              language_dictionary=language_dictionary)
+                else:
+                    embed = cf.get_error_embed(language=language_dictionary, key="configuration_parameter")
             else:
                 embed = cf.get_error_embed(language=language_dictionary, key="configuration_arguments")
 
