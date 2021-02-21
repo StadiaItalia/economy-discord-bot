@@ -234,36 +234,28 @@ class EconomyBot(discord.ext.commands.Bot):
                 await asyncio.sleep(int(configuration.check_timer) * 60)
                 registered_users = list(database.read_registered_users(guild_id=guild.id))
                 logger.debug(f"Found these registered users for guild {guild.id} {guild.name}")
-                logger.debug(f"{str(registered_users)}")
-                for registered_user in registered_users:
-                    messages = 0
-                    channels = list(map(lambda x: int(cf.clean_channel_id(x)), configuration.listening_channels))
-                    for channel_id in channels:
-                        start_check = datetime.datetime.utcnow() - datetime.timedelta(
-                            minutes=int(configuration.check_timer))
-                        channel = [x for x in guild.channels if x.id == channel_id][0]
-                        logger.debug(
-                            f"Searching user {registered_user.user_id} messages in channel {channel.id} for server {guild.id}")
+                channels = list(map(lambda x: int(cf.clean_channel_id(x)), configuration.listening_channels))
+                listaMessaggiConformi = []
+                for channel_id in channels:
+                    start_check = datetime.datetime.utcnow() - datetime.timedelta(
+                        minutes=int(configuration.check_timer))
+                    channel = [x for x in guild.channels if x.id == channel_id][0]
 
-                        async for message in channel.history(limit=500, oldest_first=False):
-                            if message.author.id == int(registered_user.user_id):
-                                if message.created_at < start_check:
-                                    logger.debug(
-                                        f"Found messages older than {start_check}, stopping iteration for channel {channel.id}")
-                                    break
-                                else:
-                                    messages += 1
-
-                        if messages >= int(configuration.check_maximum_messages):
-                            messages = int(configuration.check_maximum_messages)
+                    async for message in channel.history(limit=10, oldest_first=False):
+                        if message.created_at < start_check:
+                            logger.debug(
+                                f"Found messages older than {start_check}, stopping iteration for channel {channel.id}")
                             break
+                        else:
+                            listaMessaggiConformi.append( message.author.id)
 
-                    logger.info(
-                        f"User {registered_user.user_id} wrote {messages} message in the last {configuration.check_timer} minutes")
-                    if messages >= int(configuration.check_minimum_messages):
-                        rate = messages / int(configuration.check_maximum_messages)
+                listaMessaggiConformi = np.array(listaMessaggiConformi)
+                dizionarioID = collections.Counter(listaMessaggiConformi)
+                for user_id,numeroMessaggi in dizionarioID.items():
+                    if (user_id in registered_users) and (numeroMessaggi >= int(configuration.check_minimum_messages)):
+                        rate = numeroMessaggi / int(configuration.check_maximum_messages)
                         reward = float(rate * int(configuration.check_maximum_currency))
-                        await database.automatic_reward(user_id=registered_user.user_id, guild_id=guild.id,
-                                                        amount=reward)
+                        await database.automatic_operation(user_id=user_id, guild_id=guild.id,
+                                                    amount=reward, operation = "Adding")
 
         economy_bot.run(token)
