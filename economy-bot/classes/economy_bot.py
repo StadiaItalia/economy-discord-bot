@@ -261,4 +261,40 @@ class EconomyBot(discord.ext.commands.Bot):
                         await database.wallet_operation(user_id=user_id, guild_id=guild.id,
                                                         amount=reward, operation=Operation.ADDING)
 
-        economy_bot.run(token)
+                    
+            @economy_bot.command()
+            async def donate(ctx,*args):
+                # esempio di comando -> e>donate @TopoGigio 5
+                guild_id = ctx.guild.id
+                # Il primo argomento è l'id dell'utente a cui inviare mentre il secondo è il valore
+                idReceiver = args[0][3:len(args[0])-1]
+                idSender = ctx.author.id
+                #Obtain registered users 
+                registered_users = database.read_registered_users(guild_id)
+                # Check if Receiver and sender are in database
+                if (idSender not in registered_users):
+                    await ctx.send("You are not registered! Please, register yourself")
+                elif (idReceiver not in registered_users):
+                    await ctx.send("@<!{}> is not registered".format(idReceiver)) #Please Check if the hashtag is correct
+                else:
+                    try:
+                        moneyToSend = args[1]
+                        if "," in moneyToSend:
+                            moneyToSend = moneyToSend.replace(",",".")
+                        moneyToSend = float(moneyToSend)
+                        # Controllare dal database se l'utente possiede quei vezcoin
+                        moneySender = database.read_wallet(idSender,guild_id)
+                        if moneySender >= moneyToSend:
+                            await database.automatic_operation(idSender, guild_id, moneyToSend, "Subtract")
+                            await database.automatic_operation(idReceiver,guild_id,moneyToSend,"Adding")
+                            await ctx.send("You have sended {} money to @<!{}> correctly".format(moneyToSend,idReceiver))
+                        else:
+                            embed = discord.Embed()
+                            embed.set_image(url="https://media.giphy.com/media/Km2YiI2mzRKgw/giphy.gif")
+                            await ctx.send("You have only {} money".format(moneySender))  
+                            await ctx.send(embed=embed)
+                    except:
+                        await ctx.send("Your command is not correct. Please, use the e>help command for have more info!")
+
+                
+    economy_bot.run(token)
