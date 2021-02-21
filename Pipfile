@@ -9,6 +9,7 @@ python-dotenv = "==0.15.0"
 dnspython = "*"
 ivozzo-pyboilerplate = "*"
 pymongo = "*"
+numpy = "*"
 
 [dev-packages]
 

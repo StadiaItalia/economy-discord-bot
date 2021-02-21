@@ -2,6 +2,7 @@ from boilerplate.mongodatabase import MongoDatabase
 from classes.bot_configuration import BotConfiguration
 from classes.wallet import Wallet
 from pymongo import MongoClient
+from enums.operation import Operation
 
 
 class BotDatabase(MongoDatabase):
@@ -82,14 +83,16 @@ class BotDatabase(MongoDatabase):
             self.wallet_repository.insert_one(wallet.to_dict())
             return True
 
-    # Operation is a string type. It can be "Adding" or "Subtracting". 
-    # You can perform better the operation like increase the money or exchange it
-    async def automatic_operation(self, user_id, guild_id, amount, operation):
+    async def wallet_operation(self, user_id, guild_id, amount, operation):
         wallet = self.read_wallet(user_id=user_id, guild_id=guild_id)
         if wallet:
             self.logger.info(f"{operation}  {amount} for user {user_id} in guild {guild_id}")
-            mathFunction = {"Adding":sum([wallet.amount,amount]), "Subtract":sum([wallet.amount,-amount])}
-            total_amount = mathFunction[operation]
+            math_operation = {Operation.ADDING: sum([wallet.amount, amount]),
+                              Operation.SUBTRACTING: sum([wallet.amount, -amount])}
+            total_amount = math_operation[operation]
             self.logger.debug(f"Total amount: {total_amount}")
             self.wallet_repository.update_one({"guild_id": guild_id, "user_id": user_id},
                                               {"$set": {"amount": total_amount}})
+            return True
+        else:
+            return False

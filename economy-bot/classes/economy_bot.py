@@ -1,9 +1,12 @@
 import asyncio
+import collections
 import traceback
 import datetime
 import modules.common_functions as cf
 import discord as discord
 import languages.selector as language
+import numpy as np
+from enums.operation import Operation
 from discord.ext.commands import command
 
 intents = discord.Intents.default()
@@ -235,7 +238,7 @@ class EconomyBot(discord.ext.commands.Bot):
                 registered_users = list(database.read_registered_users(guild_id=guild.id))
                 logger.debug(f"Found these registered users for guild {guild.id} {guild.name}")
                 channels = list(map(lambda x: int(cf.clean_channel_id(x)), configuration.listening_channels))
-                listaMessaggiConformi = []
+                list_messages = []
                 for channel_id in channels:
                     start_check = datetime.datetime.utcnow() - datetime.timedelta(
                         minutes=int(configuration.check_timer))
@@ -247,15 +250,15 @@ class EconomyBot(discord.ext.commands.Bot):
                                 f"Found messages older than {start_check}, stopping iteration for channel {channel.id}")
                             break
                         else:
-                            listaMessaggiConformi.append( message.author.id)
+                            list_messages.append(message.author.id)
 
-                listaMessaggiConformi = np.array(listaMessaggiConformi)
-                dizionarioID = collections.Counter(listaMessaggiConformi)
-                for user_id,numeroMessaggi in dizionarioID.items():
-                    if (user_id in registered_users) and (numeroMessaggi >= int(configuration.check_minimum_messages)):
-                        rate = numeroMessaggi / int(configuration.check_maximum_messages)
+                list_messages = np.array(list_messages)
+                ids = collections.Counter(list_messages)
+                for user_id, messages_number in ids.items():
+                    if (user_id in registered_users) and (messages_number >= int(configuration.check_minimum_messages)):
+                        rate = messages_number / int(configuration.check_maximum_messages)
                         reward = float(rate * int(configuration.check_maximum_currency))
-                        await database.automatic_operation(user_id=user_id, guild_id=guild.id,
-                                                    amount=reward, operation = "Adding")
+                        await database.wallet_operation(user_id=user_id, guild_id=guild.id,
+                                                        amount=reward, operation=Operation.ADDING)
 
         economy_bot.run(token)
