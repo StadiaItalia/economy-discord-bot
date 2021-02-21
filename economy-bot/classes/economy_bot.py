@@ -275,10 +275,18 @@ class EconomyBot(discord.ext.commands.Bot):
             language_dictionary = language.select(configuration.language)
             registered_wallets = database.read_registered_users(guild_id=ctx.guild.id)
             registered_users_id = list(map(lambda x: int(x.user_id), registered_wallets))
-            target = await ctx.guild.fetch_member(member_id=int(cf.clean_user_id(user_id=target_user)))
-            if ctx.author.id not in registered_users_id:
+            target_id = cf.clean_user_id(user_id=target_user)
+            if target_id.isnumeric():
+                target = await ctx.guild.fetch_member(member_id=int(cf.clean_user_id(user_id=target_user)))
+            else:
+                target = None
+            if not target_user or not amount:
+                embed = cf.get_error_embed(language=language_dictionary, key="configuration_arguments")
+            elif not amount.isnumeric():
+                embed = cf.get_error_embed(language=language_dictionary, key="value_not_numeric")
+            elif ctx.author.id not in registered_users_id:
                 embed = cf.get_error_embed(language=language_dictionary, key="wallet_retrieval")
-            elif target.id not in registered_users_id:
+            elif target is None or target.id not in registered_users_id:
                 embed = cf.get_error_embed(language=language_dictionary, key="target_retrieval")
             else:
                 user_wallet = database.read_wallet(user_id=ctx.author.id, guild_id=ctx.guild.id)
