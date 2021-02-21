@@ -73,7 +73,7 @@ def get_configuration_embed(command_prefix, configuration, language):
                           f"{language['configuration_description']['currency_icon']}",
                     inline=False)
 
-    embed.add_field(name=f"{command_prefix}config payment_confirmation <on|off>",
+    embed.add_field(name=f"{command_prefix}config payment_confirmation <true|false>",
                     value=f"{language['current'].format(configuration.payment_confirmation)}\n"
                           f"{language['configuration_description']['payment_confirmation']}",
                     inline=False)
