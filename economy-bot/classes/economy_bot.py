@@ -165,7 +165,7 @@ class EconomyBot(discord.ext.commands.Bot):
                     if value.lower() not in ["true", "false"]:
                         embed = cf.get_error_embed(language=language_dictionary, key="incorrect_value")
                     else:
-                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=True if value.lower == "true" else False,
                                              language_dictionary=language_dictionary)
                 else:
                     embed = cf.get_error_embed(language=language_dictionary, key="configuration_parameter")
@@ -235,8 +235,9 @@ class EconomyBot(discord.ext.commands.Bot):
             while True:
                 configuration = database.read_configuration(guild_id=guild.id)
                 await asyncio.sleep(int(configuration.check_timer) * 60)
-                registered_users = list(database.read_registered_users(guild_id=guild.id))
-                logger.debug(f"Found these registered users for guild {guild.id} {guild.name}")
+                registered_wallets = database.read_registered_users(guild_id=guild.id)
+                registered_users_id = list(map(lambda x: int(x.user_id), registered_wallets))
+                logger.info(f"Found these registered users for guild {guild.id} {guild.name}")
                 channels = list(map(lambda x: int(cf.clean_channel_id(x)), configuration.listening_channels))
                 list_messages = []
                 for channel_id in channels:
@@ -244,57 +245,76 @@ class EconomyBot(discord.ext.commands.Bot):
                         minutes=int(configuration.check_timer))
                     channel = [x for x in guild.channels if x.id == channel_id][0]
 
-                    async for message in channel.history(limit=10, oldest_first=False):
+                    async for message in channel.history(limit=500, oldest_first=False):
                         if message.created_at < start_check:
-                            logger.debug(
+                            logger.info(
                                 f"Found messages older than {start_check}, stopping iteration for channel {channel.id}")
                             break
                         else:
+                            logger.info("Append")
                             list_messages.append(message.author.id)
 
                 list_messages = np.array(list_messages)
                 ids = collections.Counter(list_messages)
+                logger.info(ids)
                 for user_id, messages_number in ids.items():
-                    if (user_id in registered_users) and (messages_number >= int(configuration.check_minimum_messages)):
+                    if (user_id in registered_users_id) and (messages_number >= int(configuration.check_minimum_messages)):
                         rate = messages_number / int(configuration.check_maximum_messages)
                         reward = float(rate * int(configuration.check_maximum_currency))
-                        await database.wallet_operation(user_id=user_id, guild_id=guild.id,
+                        await database.wallet_operation(user_id=int(user_id), guild_id=guild.id,
                                                         amount=reward, operation=Operation.ADDING)
 
-                    
-            @economy_bot.command()
-            async def donate(ctx,*args):
-                # esempio di comando -> e>donate @TopoGigio 5
-                guild_id = ctx.guild.id
-                # Il primo argomento è l'id dell'utente a cui inviare mentre il secondo è il valore
-                idReceiver = args[0][3:len(args[0])-1]
-                idSender = ctx.author.id
-                #Obtain registered users 
-                registered_users = database.read_registered_users(guild_id)
-                # Check if Receiver and sender are in database
-                if (idSender not in registered_users):
-                    await ctx.send("You are not registered! Please, register yourself")
-                elif (idReceiver not in registered_users):
-                    await ctx.send("@<!{}> is not registered".format(idReceiver)) #Please Check if the hashtag is correct
-                else:
-                    try:
-                        moneyToSend = args[1]
-                        if "," in moneyToSend:
-                            moneyToSend = moneyToSend.replace(",",".")
-                        moneyToSend = float(moneyToSend)
-                        # Controllare dal database se l'utente possiede quei vezcoin
-                        moneySender = database.read_wallet(idSender,guild_id)
-                        if moneySender >= moneyToSend:
-                            await database.automatic_operation(idSender, guild_id, moneyToSend, "Subtract")
-                            await database.automatic_operation(idReceiver,guild_id,moneyToSend,"Adding")
-                            await ctx.send("You have sended {} money to @<!{}> correctly".format(moneyToSend,idReceiver))
-                        else:
-                            embed = discord.Embed()
-                            embed.set_image(url="https://media.giphy.com/media/Km2YiI2mzRKgw/giphy.gif")
-                            await ctx.send("You have only {} money".format(moneySender))  
-                            await ctx.send(embed=embed)
-                    except:
-                        await ctx.send("Your command is not correct. Please, use the e>help command for have more info!")
+        @economy_bot.command()
+        async def pay(ctx, target_user, amount):
+            configuration = database.read_configuration(guild_id=ctx.guild.id)
+            language_dictionary = language.select(configuration.language)
+            registered_wallets = database.read_registered_users(guild_id=ctx.guild.id)
+            registered_users_id = list(map(lambda x: int(x.user_id), registered_wallets))
+            target = await ctx.guild.fetch_member(member_id=int(cf.clean_user_id(user_id=target_user)))
+            if ctx.author.id not in registered_users_id:
+                embed = cf.get_error_embed(language=language_dictionary, key="wallet_retrieval")
+            elif target.id not in registered_users_id:
+                embed = cf.get_error_embed(language=language_dictionary, key="target_retrieval")
+            else:
+                user_wallet = database.read_wallet(user_id=ctx.author.id, guild_id=ctx.guild.id)
 
-                
-    economy_bot.run(token)
+                if float(amount) > float(user_wallet.amount):
+                    embed = cf.get_error_embed(language=language_dictionary, key="insufficient_funds")
+                else:
+                    if configuration.payment_confirmation:
+                        confirmation_message = await cf.send_private_confirmation(user=ctx.author,
+                                                                                  title=language_dictionary["payment"][
+                                                                                      "title"],
+                                                                                  description=
+                                                                                  language_dictionary["payment"][
+                                                                                      "description"].format(amount,
+                                                                                                            configuration.currency_icon,
+                                                                                                            configuration.currency_name,
+                                                                                                            target.name))
+
+                        def check_confirmation(reaction, user):
+                            return user == ctx.author and str(reaction.emoji) == "✅"
+
+                        try:
+                            reaction, user = await economy_bot.wait_for("reaction_add", timeout=15.0,
+                                                                        check=check_confirmation)
+                        except asyncio.TimeoutError:
+                            await confirmation_message.delete()
+                            embed = cf.get_error_embed(language=language_dictionary, key="timeout")
+                        else:
+                            await confirmation_message.delete()
+                            await database.wallet_operation(user_id=ctx.author.id, guild_id=ctx.guild.id, amount=float(amount),
+                                                      operation=Operation.SUBTRACTING)
+                            await database.wallet_operation(user_id=target.id, guild_id=ctx.guild.id, amount=float(amount),
+                                                      operation=Operation.ADDING)
+                            embed = cf.get_done_embed(language=language_dictionary)
+                    else:
+                        await database.wallet_operation(user_id=ctx.author.id, guild_id=ctx.guild.id, amount=float(amount),
+                                                  operation=Operation.SUBTRACTING)
+                        await database.wallet_operation(user_id=target.id, guild_id=ctx.guild.id, amount=float(amount),
+                                                  operation=Operation.ADDING)
+                        embed = cf.get_done_embed(language=language_dictionary)
+
+            await ctx.send(embed=embed)
+
+        economy_bot.run(token)

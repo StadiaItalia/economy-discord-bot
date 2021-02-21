@@ -120,6 +120,14 @@ async def send_confirmation(context, title, description):
     return confirmation_message
 
 
+async def send_private_confirmation(user, title, description):
+    embed = get_embed(title=title, description=description, color=discord.Color.dark_magenta())
+    confirmation_message = await user.send(embed=embed)
+    await confirmation_message.add_reaction(emoji="✅")
+    await confirmation_message.add_reaction(emoji="❎")
+    return confirmation_message
+
+
 async def clear_confirmation(confirmation_message):
     await confirmation_message.clear_reaction(emoji="✅")
     await confirmation_message.clear_reaction(emoji="❎")

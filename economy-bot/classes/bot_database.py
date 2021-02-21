@@ -86,7 +86,7 @@ class BotDatabase(MongoDatabase):
     async def wallet_operation(self, user_id, guild_id, amount, operation):
         wallet = self.read_wallet(user_id=user_id, guild_id=guild_id)
         if wallet:
-            self.logger.info(f"{operation}  {amount} for user {user_id} in guild {guild_id}")
+            self.logger.info(f"{operation} - amount: {amount} for user {user_id} in guild {guild_id}")
             math_operation = {Operation.ADDING: sum([wallet.amount, amount]),
                               Operation.SUBTRACTING: sum([wallet.amount, -amount])}
             total_amount = math_operation[operation]

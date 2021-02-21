@@ -35,6 +35,10 @@ languages = {
             "title": "Personal wallet",
             "description": "You have {} {} {} in your wallet"
         },
+        "payment": {
+            "title": "Payment",
+            "description": "You're about to pay {} {} {} to {}"
+        },
         "done": "Done",
         "done_description": "Command executed",
         "error": "Error",
@@ -50,7 +54,9 @@ languages = {
             "incorrect_value": "Passed value comprehension impossibile, please check",
             "timeout": "Timeout",
             "wallet_already_registered": "Wallet already registered",
-            "wallet_retrieval": "Cannot retrieve wallet, make sure to register beforehand"
+            "wallet_retrieval": "Cannot retrieve wallet, make sure to register beforehand",
+            "target_retrieval": "Cannot retrieve target wallet, make sure the user is registered",
+            "insufficient_funds": "Insufficient funds"
         }
     },
 
@@ -90,6 +96,10 @@ languages = {
             "title": "Wallet personale",
             "description": "Hai {} {} {} nel tuo wallet"
         },
+        "payment": {
+            "title": "Pagamento",
+            "description": "Stai per pagare {} {} {} a {}"
+        },
         "done": "Eseguito",
         "done_description": "Comando eseguito",
         "error": "Errore",
@@ -105,7 +115,9 @@ languages = {
             "incorrect_value": "Impossibile comprendere il valore passato, verificare",
             "timeout": "Timeout",
             "wallet_already_registered": "Wallet gia esistente",
-            "wallet_retrieval": "Impossibile recuperare il wallet, accertarsi di essersi registrati prima"
+            "wallet_retrieval": "Impossibile recuperare il wallet, accertarsi di essersi registrati prima",
+            "target_retrieval": "Impossibile recuperare il wallet di destinazione, accertarsi che l'utente sia registrato",
+            "insufficient_funds": "Fondi insufficienti"
         }
     }
 }
