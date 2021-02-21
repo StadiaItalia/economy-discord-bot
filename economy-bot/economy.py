@@ -2,7 +2,7 @@ from boilerplate.logger import Logger
 
 import modules.configuration as configuration
 from classes.bot_database import BotDatabase
-from classes.economy_bot import EconomyBot
+from classes.bot_economy import EconomyBot
 
 logger = None
 database = None
@@ -18,6 +18,7 @@ if configuration.database_host and configuration.database_user and configuration
                                database=configuration.database_name, password=configuration.database_password,
                                configuration_repository=configuration.database_configuration_collection,
                                wallet_repository=configuration.database_wallet_collection,
+                               transaction_repository=configuration.database_transactions_collection,
                                logger=logger)
     except Exception as ex:
         raise Exception(f"Exception during database startup: {ex}")

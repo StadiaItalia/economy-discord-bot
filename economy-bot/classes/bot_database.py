@@ -3,14 +3,16 @@ from classes.bot_configuration import BotConfiguration
 from classes.wallet import Wallet
 from pymongo import MongoClient
 from enums.operation import Operation
-
+from classes.transaction import Transaction
 
 class BotDatabase(MongoDatabase):
-    def __init__(self, host, user, password, database, configuration_repository, wallet_repository, logger):
+    def __init__(self, host, user, password, database, configuration_repository, wallet_repository,
+                 transaction_repository, logger):
         self.logger = logger
         self.init_database(host=host, user=user, password=password, db_name=database)
         self.configuration_repository = self.get_collection(configuration_repository)
         self.wallet_repository = self.get_collection(wallet_repository)
+        self.transaction_repository = self.get_collection(transaction_repository)
 
     def init_database(self, host, user, password, db_name):
         self.database = MongoClient(
@@ -96,3 +98,8 @@ class BotDatabase(MongoDatabase):
             return True
         else:
             return False
+
+    async def create_transaction(self, user_id, guild_id, target_id, amount):
+        transaction = Transaction(guild_id=guild_id, user_id=user_id, target_id=target_id, amount=amount)
+        self.logger.info(f"Creating transaction for guild {guild_id} between user {user_id} and {user_id} for {amount}")
+        self.transaction_repository.insert_one(transaction.to_dict())

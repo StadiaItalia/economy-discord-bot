@@ -37,7 +37,9 @@ languages = {
         },
         "payment": {
             "title": "Payment",
-            "description": "You're about to pay {} {} {} to {}"
+            "description": "You're about to pay {} {} {} to {}",
+            "payment_from": "Paymento from {}",
+            "payment_to": "Payment to {}"
         },
         "done": "Done",
         "done_description": "Command executed",
@@ -98,7 +100,9 @@ languages = {
         },
         "payment": {
             "title": "Pagamento",
-            "description": "Stai per pagare {} {} {} a {}"
+            "description": "Stai per pagare {} {} {} a {}",
+            "payment_from": "Pagamento da {}",
+            "payment_to": "Pagamento a {}"
         },
         "done": "Eseguito",
         "done_description": "Comando eseguito",
