@@ -1,13 +1,13 @@
 import asyncio
-import collections
-import traceback
 import datetime
-import modules.common_functions as cf
+import traceback
+
 import discord as discord
-import languages.selector as language
-import numpy as np
-from enums.operation import Operation
 from discord.ext.commands import command
+
+import languages.selector as language
+import modules.common_functions as cf
+from enums.operation import Operation
 
 intents = discord.Intents.default()
 intents.members = True
@@ -69,7 +69,6 @@ class EconomyBot(discord.ext.commands.Bot):
                     return
 
             language_dictionary = language.select(configuration.language)
-            embed = None
             if not args:
                 embed = cf.get_configuration_embed(command_prefix=economy_bot.command_prefix,
                                                    configuration=configuration,
@@ -165,7 +164,8 @@ class EconomyBot(discord.ext.commands.Bot):
                     if value.lower() not in ["true", "false"]:
                         embed = cf.get_error_embed(language=language_dictionary, key="incorrect_value")
                     else:
-                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=True if value.lower == "true" else False,
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix,
+                                             value=True if value.lower == "true" else False,
                                              language_dictionary=language_dictionary)
                 else:
                     embed = cf.get_error_embed(language=language_dictionary, key="configuration_parameter")
@@ -231,37 +231,42 @@ class EconomyBot(discord.ext.commands.Bot):
                 return cf.get_error_embed(language=language_dictionary, key="cannot_update")
 
         async def check_user_activities(guild):
-            logger.info(f"Checking {guild.id} {guild.name} activities")
             while True:
+                logger.info(f"Checking {guild.id} {guild.name} activities")
                 configuration = database.read_configuration(guild_id=guild.id)
                 await asyncio.sleep(int(configuration.check_timer) * 60)
-                registered_wallets = database.read_registered_users(guild_id=guild.id)
-                registered_users_id = list(map(lambda x: int(x.user_id), registered_wallets))
-                logger.info(f"Found these registered users for guild {guild.id} {guild.name}")
-                channels = list(map(lambda x: int(cf.clean_channel_id(x)), configuration.listening_channels))
-                list_messages = []
-                for channel_id in channels:
-                    start_check = datetime.datetime.utcnow() - datetime.timedelta(
-                        minutes=int(configuration.check_timer))
-                    channel = [x for x in guild.channels if x.id == channel_id][0]
+                registered_users = list(database.read_registered_users(guild_id=guild.id))
+                logger.debug(f"Found these registered users for guild {guild.id} {guild.name}")
+                logger.debug(f"{str(registered_users)}")
+                for registered_user in registered_users:
+                    messages = 0
+                    channels = list(map(lambda x: int(cf.clean_channel_id(x)), configuration.listening_channels))
+                    for channel_id in channels:
+                        start_check = datetime.datetime.utcnow() - datetime.timedelta(
+                            minutes=int(configuration.check_timer))
+                        channel = [x for x in guild.channels if x.id == channel_id][0]
+                        logger.debug(
+                            f"Searching user {registered_user.user_id} messages in channel {channel.id} for server {guild.id}")
 
-                    async for message in channel.history(limit=500, oldest_first=False):
-                        if message.created_at < start_check:
-                            logger.info(
-                                f"Found messages older than {start_check}, stopping iteration for channel {channel.id}")
+                        async for message in channel.history(limit=500, oldest_first=False):
+                            if message.author.id == int(registered_user.user_id):
+                                if message.created_at < start_check:
+                                    logger.debug(
+                                        f"Found messages older than {start_check}, stopping iteration for channel {channel.id}")
+                                    break
+                                else:
+                                    messages += 1
+
+                        if messages >= int(configuration.check_maximum_messages):
+                            messages = int(configuration.check_maximum_messages)
                             break
-                        else:
-                            logger.info("Append")
-                            list_messages.append(message.author.id)
 
-                list_messages = np.array(list_messages)
-                ids = collections.Counter(list_messages)
-                logger.info(ids)
-                for user_id, messages_number in ids.items():
-                    if (user_id in registered_users_id) and (messages_number >= int(configuration.check_minimum_messages)):
-                        rate = messages_number / int(configuration.check_maximum_messages)
+                    logger.info(
+                        f"User {registered_user.user_id} wrote {messages} message in the last {configuration.check_timer} minutes")
+                    if messages >= int(configuration.check_minimum_messages):
+                        rate = messages / int(configuration.check_maximum_messages)
                         reward = float(rate * int(configuration.check_maximum_currency))
-                        await database.wallet_operation(user_id=int(user_id), guild_id=guild.id,
+                        await database.wallet_operation(user_id=registered_user.user_id, guild_id=guild.id,
                                                         amount=reward, operation=Operation.ADDING)
 
         @economy_bot.command()
@@ -303,16 +308,19 @@ class EconomyBot(discord.ext.commands.Bot):
                             embed = cf.get_error_embed(language=language_dictionary, key="timeout")
                         else:
                             await confirmation_message.delete()
-                            await database.wallet_operation(user_id=ctx.author.id, guild_id=ctx.guild.id, amount=float(amount),
-                                                      operation=Operation.SUBTRACTING)
-                            await database.wallet_operation(user_id=target.id, guild_id=ctx.guild.id, amount=float(amount),
-                                                      operation=Operation.ADDING)
+                            await database.wallet_operation(user_id=ctx.author.id, guild_id=ctx.guild.id,
+                                                            amount=float(amount),
+                                                            operation=Operation.SUBTRACTING)
+                            await database.wallet_operation(user_id=target.id, guild_id=ctx.guild.id,
+                                                            amount=float(amount),
+                                                            operation=Operation.ADDING)
                             embed = cf.get_done_embed(language=language_dictionary)
                     else:
-                        await database.wallet_operation(user_id=ctx.author.id, guild_id=ctx.guild.id, amount=float(amount),
-                                                  operation=Operation.SUBTRACTING)
+                        await database.wallet_operation(user_id=ctx.author.id, guild_id=ctx.guild.id,
+                                                        amount=float(amount),
+                                                        operation=Operation.SUBTRACTING)
                         await database.wallet_operation(user_id=target.id, guild_id=ctx.guild.id, amount=float(amount),
-                                                  operation=Operation.ADDING)
+                                                        operation=Operation.ADDING)
                         embed = cf.get_done_embed(language=language_dictionary)
 
             await ctx.send(embed=embed)

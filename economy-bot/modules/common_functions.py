@@ -101,15 +101,15 @@ def get_configuration_embed(command_prefix, configuration, language):
 
 
 def clean_channel_id(channel_id):
-    return channel_id.replace("<#", "").replace(">", "")
+    return channel_id.replace("<", "").replace(">", "").replace("#", "")
 
 
 def clean_role_id(role_id):
-    return role_id.replace("<@&", "").replace(">", "")
+    return role_id.replace("<@", "").replace(">", "").replace("&", "")
 
 
 def clean_user_id(user_id):
-    return user_id.replace("<@!", "").replace(">", "")
+    return user_id.replace("<@", "").replace(">", "").replace("!", "")
 
 
 async def send_confirmation(context, title, description):
