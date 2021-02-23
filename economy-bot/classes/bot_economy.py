@@ -181,7 +181,7 @@ class EconomyBot(discord.ext.commands.Bot):
                 if ctx.channel.id != int(cf.clean_channel_id(channel_id=configuration.command_channel)):
                     return
             language_dictionary = language.select(configuration.language)
-            confirmation_message = await cf.send_confirmation(context=ctx,
+            confirmation_message = await cf.send_private_confirmation(user=ctx.author,
                                                               title=language_dictionary["registration"]["title"],
                                                               description=language_dictionary["registration"][
                                                                   "description"])
@@ -190,18 +190,17 @@ class EconomyBot(discord.ext.commands.Bot):
                 return user == ctx.author and str(reaction.emoji) == "✅"
 
             try:
-                reaction, user = await economy_bot.wait_for("reaction_add", timeout=15.0, check=check_confirmation)
+                reaction, user = await economy_bot.wait_for("reaction_add", timeout=30.0, check=check_confirmation)
             except asyncio.TimeoutError:
                 embed = cf.get_error_embed(language=language_dictionary, key="timeout")
-                await confirmation_message.edit(embed=embed)
-                await confirmation_message.clear_reactions()
+                await confirmation_message.delete()
             else:
                 if database.create_wallet(user_id=ctx.author.id, guild_id=ctx.guild.id):
                     embed = cf.get_done_embed(language=language_dictionary)
                 else:
                     embed = cf.get_error_embed(language=language_dictionary, key="wallet_already_registered")
-                await confirmation_message.edit(embed=embed)
-                await confirmation_message.clear_reactions()
+                await confirmation_message.delete()
+                await ctx.channel.send(embed=embed)
 
         @economy_bot.command()
         async def wallet(ctx):
@@ -309,7 +308,7 @@ class EconomyBot(discord.ext.commands.Bot):
                             return user == ctx.author and str(reaction.emoji) == "✅"
 
                         try:
-                            reaction, user = await economy_bot.wait_for("reaction_add", timeout=15.0,
+                            reaction, user = await economy_bot.wait_for("reaction_add", timeout=30.0,
                                                                         check=check_confirmation)
                         except asyncio.TimeoutError:
                             await confirmation_message.delete()

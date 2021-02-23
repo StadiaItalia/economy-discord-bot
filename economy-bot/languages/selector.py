@@ -36,14 +36,14 @@ languages = {
             "description": "You have {} {} {} in your wallet"
         },
         "payment": {
-            "title": "Payment",
+            "title": "Payment 💰",
             "description": "You're about to pay {} {} {} to {}",
             "payment_from": "Paymento from {}",
             "payment_to": "Payment to {}"
         },
-        "done": "Done",
+        "done": "Done ✅",
         "done_description": "Command executed",
-        "error": "Error",
+        "error": "Error ❌",
         "error_messages": {
             "configuration_parameter": "Configuration parameter not recognized",
             "configuration_arguments": "Number of arguments passed incorrect",
@@ -99,14 +99,14 @@ languages = {
             "description": "Hai {} {} {} nel tuo wallet"
         },
         "payment": {
-            "title": "Pagamento",
+            "title": "Pagamento 💰",
             "description": "Stai per pagare {} {} {} a {}",
             "payment_from": "Pagamento da {}",
             "payment_to": "Pagamento a {}"
         },
-        "done": "Eseguito",
+        "done": "Eseguito ✅",
         "done_description": "Comando eseguito",
-        "error": "Errore",
+        "error": "Errore ❌",
         "error_messages": {
             "configuration_parameter": "Parametro di configurazione non riconosciuto",
             "configuration_arguments": "Numero di argomenti passati insufficiente",
