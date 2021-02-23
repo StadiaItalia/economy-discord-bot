@@ -19,6 +19,15 @@ def get_done_embed(language):
     return embed
 
 
+def get_payment_done_embed(language, amount, user, target, configuration):
+    title = language["payment"]["done"]
+    embed = get_embed(title=title,
+                      description=language["payment"]["transfer"].format(user, amount, configuration.currency_icon,
+                                                                         configuration.currency_name, target),
+                      color=discord.Color.dark_green())
+    return embed
+
+
 def get_info_embed(command_prefix, language):
     embed = get_embed(title=language["info_description"]["title"],
                       description=language["info_description"]["description"],

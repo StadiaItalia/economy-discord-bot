@@ -182,9 +182,10 @@ class EconomyBot(discord.ext.commands.Bot):
                     return
             language_dictionary = language.select(configuration.language)
             confirmation_message = await cf.send_private_confirmation(user=ctx.author,
-                                                              title=language_dictionary["registration"]["title"],
-                                                              description=language_dictionary["registration"][
-                                                                  "description"])
+                                                                      title=language_dictionary["registration"][
+                                                                          "title"],
+                                                                      description=language_dictionary["registration"][
+                                                                          "description"])
 
             def check_confirmation(reaction, user):
                 return user == ctx.author and str(reaction.emoji) == "✅"
@@ -272,6 +273,24 @@ class EconomyBot(discord.ext.commands.Bot):
         async def pay(ctx, target_user, amount):
             configuration = database.read_configuration(guild_id=ctx.guild.id)
             language_dictionary = language.select(configuration.language)
+
+            configuration = database.read_configuration(guild_id=ctx.guild.id)
+            if configuration.command_channel:
+                if ctx.channel.id != int(cf.clean_channel_id(channel_id=configuration.command_channel)):
+                    return
+
+            try:
+                amount = float(amount)
+            except ValueError:
+                embed = cf.get_error_embed(language=language_dictionary, key="value_not_numeric")
+                await ctx.send(embed=embed)
+                return
+
+            if amount < 0:
+                embed = cf.get_error_embed(language=language_dictionary, key="negative_value")
+                await ctx.send(embed=embed)
+                return
+
             registered_wallets = database.read_registered_users(guild_id=ctx.guild.id)
             registered_users_id = list(map(lambda x: int(x.user_id), registered_wallets))
             target_id = cf.clean_user_id(user_id=target_user)
@@ -281,8 +300,6 @@ class EconomyBot(discord.ext.commands.Bot):
                 target = None
             if not target_user or not amount:
                 embed = cf.get_error_embed(language=language_dictionary, key="configuration_arguments")
-            elif not amount.isnumeric():
-                embed = cf.get_error_embed(language=language_dictionary, key="value_not_numeric")
             elif ctx.author.id not in registered_users_id:
                 embed = cf.get_error_embed(language=language_dictionary, key="wallet_retrieval")
             elif target is None or target.id not in registered_users_id:
@@ -290,7 +307,7 @@ class EconomyBot(discord.ext.commands.Bot):
             else:
                 user_wallet = database.read_wallet(user_id=ctx.author.id, guild_id=ctx.guild.id)
 
-                if float(amount) > float(user_wallet.amount):
+                if amount > float(user_wallet.amount):
                     embed = cf.get_error_embed(language=language_dictionary, key="insufficient_funds")
                 else:
                     if configuration.payment_confirmation:
@@ -321,14 +338,66 @@ class EconomyBot(discord.ext.commands.Bot):
                             await database.wallet_operation(user_id=target.id, guild_id=ctx.guild.id,
                                                             amount=float(amount),
                                                             operation=Operation.ADDING)
-                            embed = cf.get_done_embed(language=language_dictionary)
+                            embed = cf.get_payment_done_embed(language=language_dictionary, amount=amount,
+                                                              user=ctx.author.id, target=target.id,
+                                                              configuration=configuration)
                     else:
                         await database.wallet_operation(user_id=ctx.author.id, guild_id=ctx.guild.id,
                                                         amount=float(amount),
                                                         operation=Operation.SUBTRACTING)
                         await database.wallet_operation(user_id=target.id, guild_id=ctx.guild.id, amount=float(amount),
                                                         operation=Operation.ADDING)
-                        embed = cf.get_done_embed(language=language_dictionary)
+                        embed = cf.get_payment_done_embed(language=language_dictionary, amount=amount,
+                                                          user=ctx.author.id, target=target.id,
+                                                          configuration=configuration)
+
+            await ctx.send(embed=embed)
+
+        @economy_bot.command()
+        async def manage(ctx, target_user, amount):
+            configuration = database.read_configuration(guild_id=ctx.guild.id)
+            language_dictionary = language.select(configuration.language)
+
+            if configuration.role:
+                role = discord.utils.get(ctx.guild.roles, id=int(cf.clean_role_id(role_id=configuration.role)))
+                if role not in ctx.author.roles:
+                    return
+
+            try:
+                amount = float(amount)
+            except ValueError:
+                embed = cf.get_error_embed(language=language_dictionary, key="value_not_numeric")
+                await ctx.send(embed=embed)
+                return
+
+            registered_wallets = database.read_registered_users(guild_id=ctx.guild.id)
+            registered_users_id = list(map(lambda x: int(x.user_id), registered_wallets))
+            target_id = cf.clean_user_id(user_id=target_user)
+            if target_id.isnumeric():
+                target = await ctx.guild.fetch_member(member_id=int(cf.clean_user_id(user_id=target_user)))
+            else:
+                target = None
+            if not target_user or not amount:
+                embed = cf.get_error_embed(language=language_dictionary, key="configuration_arguments")
+            elif ctx.author.id not in registered_users_id:
+                embed = cf.get_error_embed(language=language_dictionary, key="wallet_retrieval")
+            elif target is None or target.id not in registered_users_id:
+                embed = cf.get_error_embed(language=language_dictionary, key="target_retrieval")
+            else:
+                target_wallet = database.read_wallet(user_id=target.id, guild_id=ctx.guild.id)
+
+                if 0 > amount and abs(amount) > float(target_wallet.amount):
+                    amount = float(-target_wallet.amount)
+                if amount > 0:
+                    await database.wallet_operation(user_id=target.id, guild_id=ctx.guild.id,
+                                                    amount=abs(amount),
+                                                    operation=Operation.ADDING)
+                else:
+                    await database.wallet_operation(user_id=target.id, guild_id=ctx.guild.id,
+                                                    amount=abs(amount),
+                                                    operation=Operation.SUBTRACTING)
+
+                embed = cf.get_done_embed(language=language_dictionary)
 
             await ctx.send(embed=embed)
 

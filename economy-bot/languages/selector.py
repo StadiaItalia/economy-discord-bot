@@ -39,7 +39,9 @@ languages = {
             "title": "Payment 💰",
             "description": "You're about to pay {} {} {} to {}",
             "payment_from": "Paymento from {}",
-            "payment_to": "Payment to {}"
+            "payment_to": "Payment to {}",
+            "done": "Payment done ✅",
+            "transfer": "<@{}> transferred {} {} {} to <@{}>"
         },
         "done": "Done ✅",
         "done_description": "Command executed",
@@ -58,7 +60,8 @@ languages = {
             "wallet_already_registered": "Wallet already registered",
             "wallet_retrieval": "Cannot retrieve wallet, make sure to register beforehand",
             "target_retrieval": "Cannot retrieve target wallet, make sure the user is registered",
-            "insufficient_funds": "Insufficient funds"
+            "insufficient_funds": "Insufficient funds",
+            "negative_value": "Value cannot be negative"
         }
     },
 
@@ -102,7 +105,9 @@ languages = {
             "title": "Pagamento 💰",
             "description": "Stai per pagare {} {} {} a {}",
             "payment_from": "Pagamento da {}",
-            "payment_to": "Pagamento a {}"
+            "payment_to": "Pagamento a {}",
+            "done": "Pagamento effettuato ✅",
+            "transfer": "<@{}> ha traferito {} {} {} a <@{}>"
         },
         "done": "Eseguito ✅",
         "done_description": "Comando eseguito",
@@ -111,17 +116,18 @@ languages = {
             "configuration_parameter": "Parametro di configurazione non riconosciuto",
             "configuration_arguments": "Numero di argomenti passati insufficiente",
             "language_not_present": "Hai scelto un linguaggio non ancora presente, prova con un altro",
-            "cannot_update": "Non e stato possibile aggiornare la configurazione, riprovare piu tardi",
-            "role_not_present": "Il ruolo selezionato non e presente all'interno del server",
-            "channel_not_present": "Il canale selezionato e presente all'interno del server",
-            "value_not_numeric": "Il valore passato non e numerico",
+            "cannot_update": "Non e stato possibile aggiornare la configurazione, riprovare piu' tardi",
+            "role_not_present": "Il ruolo selezionato non e' presente all'interno del server",
+            "channel_not_present": "Il canale selezionato non e' presente all'interno del server",
+            "value_not_numeric": "Il valore passato non e' numerico",
             "value_greater_zero": "Il valore passato deve essere maggiore di 0",
             "incorrect_value": "Impossibile comprendere il valore passato, verificare",
             "timeout": "Timeout",
-            "wallet_already_registered": "Wallet gia esistente",
+            "wallet_already_registered": "Wallet gia' esistente",
             "wallet_retrieval": "Impossibile recuperare il wallet, accertarsi di essersi registrati prima",
             "target_retrieval": "Impossibile recuperare il wallet di destinazione, accertarsi che l'utente sia registrato",
-            "insufficient_funds": "Fondi insufficienti"
+            "insufficient_funds": "Fondi insufficienti",
+            "negative_value": "Il valore non puo' essere negativo"
         }
     }
 }
