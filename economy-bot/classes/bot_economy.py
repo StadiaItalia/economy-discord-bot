@@ -18,6 +18,7 @@ class EconomyBot(discord.ext.commands.Bot):
         super(EconomyBot, self).__init__(command_prefix="e>", intents=intents)
         self.database = database
         self.logger = logger
+        self.tasks = []
 
     async def on_error(self, event_method, *args, **kwargs):
         self.logger.error(f"Something went wrong: {event_method}")
@@ -33,7 +34,10 @@ class EconomyBot(discord.ext.commands.Bot):
                                               activity=discord.Game("Ready to roll! Use e>info to start!"))
             logger.info(f"{economy_bot.user} connected on Discord!")
             for guild in economy_bot.guilds:
-                economy_bot.loop.create_task(check_user_activities(guild=guild))
+                configuration = database.read_configuration(guild_id=guild.id)
+                if configuration.is_running:
+                    logger.info(f"Starting loop control for guild {guild.id} {guild.name}")
+                    economy_bot.loop.create_task(check_user_activities(guild=guild), name=str(guild.id))
 
         @economy_bot.event
         async def on_guild_join(guild):
@@ -175,6 +179,62 @@ class EconomyBot(discord.ext.commands.Bot):
             await ctx.channel.send(embed=embed)
 
         @economy_bot.command()
+        async def start(ctx):
+            configuration = database.read_configuration(guild_id=ctx.guild.id)
+            if configuration.command_channel:
+                if ctx.channel.id != int(cf.clean_channel_id(channel_id=configuration.command_channel)):
+                    return
+            if configuration.role:
+                role = discord.utils.get(ctx.guild.roles, id=int(cf.clean_role_id(role_id=configuration.role)))
+                if role not in ctx.author.roles:
+                    return
+
+            language_dictionary = language.select(configuration.language)
+            logger.info(f"Starting loop control for guild {ctx.guild.id} {ctx.guild.name}")
+            running_task = [x for x in economy_bot.tasks if x.get_name() == str(ctx.guild.id)]
+            if len(running_task) == 0:
+                try:
+                    economy_bot.tasks.append(
+                        economy_bot.loop.create_task(check_user_activities(guild=ctx.guild), name=str(ctx.guild.id)))
+                    embed = cf.get_done_embed(language=language_dictionary)
+                    update_value(guild_id=ctx.guild.id, item="is_running",
+                                 value=True, language_dictionary=language_dictionary)
+
+                except RuntimeError:
+                    embed = cf.get_error_embed(language=language_dictionary, key="cannot_start")
+            else:
+                embed = cf.get_error_embed(language=language_dictionary, key="already_running")
+            await ctx.send(embed=embed)
+
+        @economy_bot.command()
+        async def stop(ctx):
+            configuration = database.read_configuration(guild_id=ctx.guild.id)
+            if configuration.command_channel:
+                if ctx.channel.id != int(cf.clean_channel_id(channel_id=configuration.command_channel)):
+                    return
+            if configuration.role:
+                role = discord.utils.get(ctx.guild.roles, id=int(cf.clean_role_id(role_id=configuration.role)))
+                if role not in ctx.author.roles:
+                    return
+
+            language_dictionary = language.select(configuration.language)
+            logger.info(f"Stopping loop control for guild {ctx.guild.id} {ctx.guild.name}")
+
+            running_task = [x for x in economy_bot.tasks if x.get_name() == str(ctx.guild.id)]
+            if len(running_task) > 0:
+                try:
+                    running_task[0].cancel()
+                    embed = cf.get_done_embed(language=language_dictionary)
+                    update_value(guild_id=ctx.guild.id, item="is_running",
+                                 value=False, language_dictionary=language_dictionary)
+
+                except RuntimeError:
+                    embed = cf.get_error_embed(language=language_dictionary, key="cannot_stop")
+            else:
+                embed = cf.get_error_embed(language=language_dictionary, key="already_stopped")
+            await ctx.send(embed=embed)
+
+        @economy_bot.command()
         async def register(ctx):
             configuration = database.read_configuration(guild_id=ctx.guild.id)
             if configuration.command_channel:
@@ -232,9 +292,9 @@ class EconomyBot(discord.ext.commands.Bot):
 
         async def check_user_activities(guild):
             while True:
-                logger.info(f"Checking {guild.id} {guild.name} activities")
                 configuration = database.read_configuration(guild_id=guild.id)
                 await asyncio.sleep(int(configuration.check_timer) * 60)
+                logger.info(f"Checking {guild.id} {guild.name} activities")
                 registered_users = list(database.read_registered_users(guild_id=guild.id))
                 logger.debug(f"Found these registered users for guild {guild.id} {guild.name}")
                 logger.debug(f"{str(registered_users)}")

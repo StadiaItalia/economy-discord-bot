@@ -61,7 +61,11 @@ languages = {
             "wallet_retrieval": "Cannot retrieve wallet, make sure to register beforehand",
             "target_retrieval": "Cannot retrieve target wallet, make sure the user is registered",
             "insufficient_funds": "Insufficient funds",
-            "negative_value": "Value cannot be negative"
+            "negative_value": "Value cannot be negative",
+            "cannot_start": "Cannot start bot, please try again later",
+            "cannot_stop": "Cannot stop bot, please try again later",
+            "already_running": "The bot is already running",
+            "already_stopped": "The bot is already stopped"
         }
     },
 
@@ -127,7 +131,11 @@ languages = {
             "wallet_retrieval": "Impossibile recuperare il wallet, accertarsi di essersi registrati prima",
             "target_retrieval": "Impossibile recuperare il wallet di destinazione, accertarsi che l'utente sia registrato",
             "insufficient_funds": "Fondi insufficienti",
-            "negative_value": "Il valore non puo' essere negativo"
+            "negative_value": "Il valore non puo' essere negativo",
+            "cannot_start": "Impossibile abilitare il bot, riprovare piu' tardi",
+            "cannot_stop": "Impossibile fermare il bot, riprovare piu' tardi",
+            "already_running": "Il bot e' gia' in esecuzione",
+            "already_stopped": "Il bot e' gia' stato fermato"
         }
     }
 }

@@ -13,6 +13,7 @@ class BotConfiguration:
         self.check_maximum_currency = args.get("check_maximum_currency", 5)
         self.check_timer = args.get("check_timer", 5)
         self.payment_confirmation = args.get("payment_confirmation", True)
+        self.is_running = args.get("is_running", False)
 
     def to_dict(self):
         return {
@@ -28,7 +29,8 @@ class BotConfiguration:
             "check_minimum_messages": self.check_minimum_messages,
             "check_maximum_currency": self.check_maximum_currency,
             "check_timer": self.check_timer,
-            "payment_confirmation": self.payment_confirmation
+            "payment_confirmation": self.payment_confirmation,
+            "is_running": self.is_running
         }
 
     @staticmethod
