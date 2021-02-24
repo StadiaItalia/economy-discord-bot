@@ -54,11 +54,20 @@ class EconomyBot(discord.ext.commands.Bot):
         @economy_bot.command()
         async def info(ctx):
             configuration = database.read_configuration(guild_id=ctx.guild.id)
+            language_dictionary = language.select(configuration.language)
             if configuration.command_channel:
                 if ctx.channel.id != int(cf.clean_channel_id(channel_id=configuration.command_channel)):
                     return
             embed = cf.get_info_embed(command_prefix=economy_bot.command_prefix,
-                                      language=language.select(configuration.language))
+                                      language=language_dictionary)
+            if configuration.role:
+                role = discord.utils.get(ctx.guild.roles, id=int(cf.clean_role_id(role_id=configuration.role)))
+                if role in ctx.author.roles:
+                    embed = cf.get_private_info_embed(command_prefix=economy_bot.command_prefix,
+                                                      language=language_dictionary, embed=embed)
+            embed.add_field(name=language_dictionary["info_description"]["legend"],
+                            value=language_dictionary["info_description"]["legend_description"],
+                            inline=False)
             await ctx.channel.send(embed=embed)
 
         @economy_bot.command()
@@ -112,13 +121,15 @@ class EconomyBot(discord.ext.commands.Bot):
                     if args[1] == "disable":
                         embed = update_value(guild_id=ctx.guild.id, item=prefix, value=None,
                                              language_dictionary=language_dictionary)
-                    # TODO add a check for every channel listed
-                    # elif not discord.utils.get(ctx.guild.channels, id=int(cf.clean_channel_id(channel_id=value))):
-                    #     embed = cf.get_error_embed(language=language_dictionary, key="channel_not_present")
-                    # else:
-                    logger.debug(value)
-                    embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
-                                         language_dictionary=language_dictionary)
+                    else:
+                        for channel in value:
+                            channel_id = cf.clean_channel_id(channel_id=channel)
+                            if not channel_id.isnumeric() or not discord.utils.get(ctx.guild.channels, id=int(channel_id)):
+                                embed = cf.get_error_embed(language=language_dictionary, key="configuration_parameter")
+                                await ctx.channel.send(embed=embed)
+                                return
+                        embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,
+                                             language_dictionary=language_dictionary)
                 elif prefix == "currency_name":
                     value = args[1]
                     embed = update_value(guild_id=ctx.guild.id, item=prefix, value=value,

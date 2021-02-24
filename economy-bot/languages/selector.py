@@ -1,6 +1,7 @@
 languages = {
     "en": {
         "prefix": "prefix",
+        "user": "user",
         "value": "value",
         "current": "Current: {}",
         "info_description": {
@@ -9,6 +10,11 @@ languages = {
             "info": "Show this message",
             "config": "Show the actual configuration for your server",
             "config_update": "Update the selected prefix configuration",
+            "pay": "Transfer coins to another user",
+            "register": "Register your wallet (only on first usage)",
+            "manage": "Manage the wallet of the selected user",
+            "start": "Start the bot",
+            "stop": "Stop the bot",
             "legend": "Legend",
             "legend_description": "< > = mandatory parameter"
         },
@@ -71,6 +77,7 @@ languages = {
 
     "it": {
         "prefix": "prefisso",
+        "user": "utente",
         "value": "valore",
         "current": "Corrente: {}",
         "info_description": {
@@ -79,6 +86,11 @@ languages = {
             "info": "Mostra questo messaggio",
             "config": "Mostra la configurazione attuale per il tuo server",
             "config_update": "Aggiorna la configurazione del prefisso indicato",
+            "pay": "Trasferisci la somma indicata ad un altro utente",
+            "register": "Registra il tuo wallet (solo per il primo uso)",
+            "manage": "Gestisci il wallet dell'utente selezionato",
+            "start": "Fai partire il bot",
+            "stop": "Ferma il bot",
             "legend": "Legenda",
             "legend_description": "< > = parametro obbligatorio"
         },

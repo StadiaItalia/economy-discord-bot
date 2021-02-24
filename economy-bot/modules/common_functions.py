@@ -35,15 +35,32 @@ def get_info_embed(command_prefix, language):
     embed.add_field(name=f"{command_prefix}info",
                     value=language["info_description"]["info"],
                     inline=False)
+    embed.add_field(name=f"{command_prefix}register",
+                    value=language["info_description"]["register"],
+                    inline=False)
+    embed.add_field(name=f"{command_prefix}pay <{language['user']}> <{language['value']}>",
+                    value=language["info_description"]["pay"],
+                    inline=False)
+    return embed
+
+
+def get_private_info_embed(command_prefix, language, embed):
     embed.add_field(name=f"{command_prefix}config",
                     value=language["info_description"]["config"],
                     inline=False)
     embed.add_field(name=f"{command_prefix}config <{language['prefix']}> <{language['value']}>",
                     value=language["info_description"]["config_update"],
                     inline=False)
-    embed.add_field(name=language["info_description"]["legend"],
-                    value=language["info_description"]["legend_description"],
+    embed.add_field(name=f"{command_prefix}manage <{language['user']}> <+/-{language['value']}>",
+                    value=language["info_description"]["manage"],
                     inline=False)
+    embed.add_field(name=f"{command_prefix}start",
+                    value=language["info_description"]["start"],
+                    inline=False)
+    embed.add_field(name=f"{command_prefix}stop",
+                    value=language["info_description"]["stop"],
+                    inline=False)
+
     return embed
 
 
