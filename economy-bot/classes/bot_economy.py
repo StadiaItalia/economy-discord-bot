@@ -37,7 +37,8 @@ class EconomyBot(discord.ext.commands.Bot):
                 configuration = database.read_configuration(guild_id=guild.id)
                 if configuration.is_running:
                     logger.info(f"Starting loop control for guild {guild.id} {guild.name}")
-                    economy_bot.loop.create_task(check_user_activities(guild=guild), name=str(guild.id))
+                    economy_bot.tasks.append(
+                        economy_bot.loop.create_task(check_user_activities(guild=guild), name=str(guild.id)))
 
         @economy_bot.event
         async def on_guild_join(guild):
@@ -49,6 +50,7 @@ class EconomyBot(discord.ext.commands.Bot):
         async def on_guild_remove(guild):
             logger.info(f"Economy Bot was removed from {guild.name}")
             logger.info(f"Deleting configuration for guild {guild.name} - {guild.id}")
+            database.remove_registered_users(guild_id=guild.id)
             database.remove_configuration(guild_id=guild.id)
 
         @economy_bot.command()
@@ -73,9 +75,6 @@ class EconomyBot(discord.ext.commands.Bot):
         @economy_bot.command()
         async def config(ctx, *args):
             configuration = database.read_configuration(guild_id=ctx.guild.id)
-            if configuration.command_channel:
-                if ctx.channel.id != int(cf.clean_channel_id(channel_id=configuration.command_channel)):
-                    return
             if configuration.role:
                 role = discord.utils.get(ctx.guild.roles, id=int(cf.clean_role_id(role_id=configuration.role)))
                 if role not in ctx.author.roles:
@@ -124,7 +123,8 @@ class EconomyBot(discord.ext.commands.Bot):
                     else:
                         for channel in value:
                             channel_id = cf.clean_channel_id(channel_id=channel)
-                            if not channel_id.isnumeric() or not discord.utils.get(ctx.guild.channels, id=int(channel_id)):
+                            if not channel_id.isnumeric() or not discord.utils.get(ctx.guild.channels,
+                                                                                   id=int(channel_id)):
                                 embed = cf.get_error_embed(language=language_dictionary, key="configuration_parameter")
                                 await ctx.channel.send(embed=embed)
                                 return
@@ -192,9 +192,6 @@ class EconomyBot(discord.ext.commands.Bot):
         @economy_bot.command()
         async def start(ctx):
             configuration = database.read_configuration(guild_id=ctx.guild.id)
-            if configuration.command_channel:
-                if ctx.channel.id != int(cf.clean_channel_id(channel_id=configuration.command_channel)):
-                    return
             if configuration.role:
                 role = discord.utils.get(ctx.guild.roles, id=int(cf.clean_role_id(role_id=configuration.role)))
                 if role not in ctx.author.roles:
@@ -220,9 +217,6 @@ class EconomyBot(discord.ext.commands.Bot):
         @economy_bot.command()
         async def stop(ctx):
             configuration = database.read_configuration(guild_id=ctx.guild.id)
-            if configuration.command_channel:
-                if ctx.channel.id != int(cf.clean_channel_id(channel_id=configuration.command_channel)):
-                    return
             if configuration.role:
                 role = discord.utils.get(ctx.guild.roles, id=int(cf.clean_role_id(role_id=configuration.role)))
                 if role not in ctx.author.roles:
@@ -428,7 +422,6 @@ class EconomyBot(discord.ext.commands.Bot):
         async def manage(ctx, target_user, amount):
             configuration = database.read_configuration(guild_id=ctx.guild.id)
             language_dictionary = language.select(configuration.language)
-
             if configuration.role:
                 role = discord.utils.get(ctx.guild.roles, id=int(cf.clean_role_id(role_id=configuration.role)))
                 if role not in ctx.author.roles:

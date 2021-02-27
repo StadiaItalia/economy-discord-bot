@@ -64,6 +64,15 @@ class BotDatabase(MongoDatabase):
         registered_users = map(lambda x: Wallet.from_dict(x), self.wallet_repository.find({"guild_id": guild_id}))
         return registered_users
 
+    def remove_registered_users(self, guild_id):
+        deleted = self.wallet_repository.delete_many({"guild_id": guild_id}).deleted_count
+        if deleted.deleted_count > 0:
+            self.logger.info(f"Deleted {deleted} users for guild {guild_id}")
+            return True
+        else:
+            self.logger.info(f"Couldn't delete any users for guild {guild_id}")
+            return False
+
     def read_wallet(self, user_id, guild_id):
         wallet = self.wallet_repository.find_one({"guild_id": guild_id, "user_id": user_id})
         if wallet:

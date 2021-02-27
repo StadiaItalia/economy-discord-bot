@@ -69,6 +69,10 @@ def get_configuration_embed(command_prefix, configuration, language):
                       description=language["configuration_description"]["description"],
                       color=discord.Color.dark_gold())
 
+    embed.add_field(name=f"{language['configuration_description']['active']}",
+                    value=f"{language['current'].format(configuration.is_running)}",
+                    inline=False)
+
     embed.add_field(name=f"{command_prefix}config language <it|en>",
                     value=f"{language['current'].format(configuration.language)}\n"
                           f"{language['configuration_description']['language']}",
